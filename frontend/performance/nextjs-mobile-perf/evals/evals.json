@@ -1,0 +1,26 @@
+{
+  "skill_name": "nextjs-mobile-perf",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "lighthouse-lies-advisory",
+      "prompt": "Our Next.js marketing site scores 92 on Lighthouse mobile but on actual iPhones it takes like 8-10 seconds before the page settles. Desktop is instant. The team has been optimizing images for two sprints and it barely moved the needle. How should we approach finding and fixing whatever this is?",
+      "expected_output": "A methodology answer: emulated Blink audits can't see WebKit renderer stalls; measure on the real device (RUM beacon / on-device timings), use devtools throttling not simulated, look for the all-bytes-fast-but-load-late stall signature, bisect suspects (content-visibility, large blurs, animated filters), verify on-device.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "eval_name": "fixture-diagnose-and-fix",
+      "prompt": "The initial load of our home page is slow on mobile Safari (iPhones) — desktop is fine. The app source is at {FIXTURE}. Diagnose the likely causes, apply the fixes directly to the files (note anything that can't be fixed in code), and write {OUTPUTS}/DIAGNOSIS.md summarizing the causes ranked by expected impact and how you would verify the result.",
+      "expected_output": "Identifies and fixes: content-visibility cv-auto sections (WebKit stall), blur-[140px] glow (convert to radial-gradient), fetchPriority=high starving CSS on mobile-stacked hero, 264KB alpha-bloated hero.webp (recompress alpha_q, watch /_next/image re-encode), static domAnimation import (async features). Proposes on-device/WebKit verification.",
+      "files": ["fixture copied per run"]
+    },
+    {
+      "id": 2,
+      "eval_name": "lan-testing-traps",
+      "prompt": "I want to check my Next.js app's mobile performance before deploying. I ran `npm run build & npm start` on my MacBook and opened http://192.168.1.20:3000 from my iPhone over WiFi — it takes about 9 seconds to load. On the Mac itself it's instant, and Lighthouse gives it 95. What's going on and what's the right way to test this locally like production?",
+      "expected_output": "Spots the `&` vs `&&` race (build pegging CPU / stale .next), macOS firewall dropping LAN connections to bare node, HTTP/1.1-no-CDN caveat vs production H2/edge, device state (Low Power Mode, content blockers), Safari HTTPS-First probing, and prescribes a proper flow: sequential build, prod server or the repo's Docker image, on-device measurement rather than stopwatch.",
+      "files": []
+    }
+  ]
+}
