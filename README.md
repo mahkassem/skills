@@ -38,6 +38,7 @@ ln -s "$(pwd)/frontend/performance/nextjs-mobile-perf" ~/.claude/skills/nextjs-m
 | Skill | Path | What it does |
 |---|---|---|
 | nextjs-mobile-perf | `frontend/performance/nextjs-mobile-perf` | Diagnose and fix slow mobile page loads for Next.js — real-device WebKit measurement (RUM proxy + on-device bisection), WebKit renderer hazards (content-visibility, giant blurs), image alpha/priority traps, LAN-testing pitfalls. Benchmarked: 100% vs 70.5% assertion pass rate against a no-skill baseline. |
+| lighthouse-score-optimization | `frontend/performance/lighthouse-score-optimization` | Move a mobile Lighthouse score by working from the Lantern simulation's mechanics: what it counts and at what weight, why localhost numbers invert, and how to separate a cold-start harness artifact from a real page problem. Covers priority inversions (preloading fonts to *demote* them), framework hydration preloads, build-time font subsetting, SSR-only CSS inlining, and server-only code leaking into client bundles. Complements nextjs-mobile-perf: that one is for when the score looks fine but the phone feels slow, this one is for moving the score itself. Benchmarked: 100% vs 80% assertion pass rate against a no-skill baseline. |
 
 ## Adding a new skill
 

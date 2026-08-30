@@ -1,0 +1,31 @@
+{
+  "skill_name": "lighthouse-score-optimization",
+  "fixtures": {
+    "instrument": "Run Lighthouse mobile against any deployed site four times on the same unchanged build: three back-to-back cold runs in one session (fresh Chrome process each run, no warm profile) plus one run from a separate session on a warm, already-running Chrome, and save the four report JSON files into one directory.",
+    "lcp-triage": "Save a single Lighthouse mobile report JSON for any site whose LCP element is a small vector or text node but whose LCP is dominated by render delay, ideally a page that self-hosts several webfonts and emits many modulepreload links.",
+    "bundle-leak": "From any Vite-based React Router (or similar) app, save the production build's client chunk listing to a text file and copy in the two source files behind the largest unexpected chunks, typically a server-only route module that constructs an SDK client at module scope and a component that namespace-imports an icon library."
+  },
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "instrument-artifact-diagnosis",
+      "prompt": "Something's off with our Lighthouse numbers and I've wasted two days on it. Same exact build, no code changes between runs, and the mobile perf score bounces around 94-96 while Speed Index sits at ~3.9s every single time. I've compressed images, lazy-loaded everything below the fold, cut a bunch of JS, and SI does not move. FCP and LCP both improved when I made those changes, but SI just sits there. Four report JSON files are in {FIXTURE}: three from one session, one from a different day. What is actually going on and what should I do about it? Don't just give me a generic perf checklist.",
+      "expected_output": "Identifies that observed (unthrottled) FCP is ~2.3-2.5s in the three cold runs vs ~0.28s in the fourth, meaning browser cold-start is being counted as page time; explains Speed Index carries ~1.4x the observed number so no page change can fix it; recommends warm/persistent Chrome, a control site, and median-of-N; explicitly says NOT to keep optimizing the page for SI.",
+      "files": ["fixture copied per run"]
+    },
+    {
+      "id": 1,
+      "eval_name": "lcp-render-delay-triage",
+      "prompt": "Our marketing site scores 85 on mobile Lighthouse and LCP is the worst metric at ~3.6s. The weird part: Lighthouse says the LCP element is our header logo, which is a 4KB SVG. I don't understand how a 4KB file takes 3.6 seconds. The report JSON is at {FIXTURE}. Tell me what's actually causing this and give me the fix list in priority order. I want to know what to do first and roughly what each one buys.",
+      "expected_output": "Reads LCP phases and identifies Render Delay ~74% (element was ready, painting was blocked) rather than Load Time; identifies the six fonts fetching at VeryHigh priority starving the render-blocking stylesheet; recommends preloading the fonts to DEMOTE them to High (the counterintuitive fix) and deprioritizing the 44 modulepreload links; does NOT recommend compressing the 4KB SVG.",
+      "files": ["fixture copied per run"]
+    },
+    {
+      "id": 2,
+      "eval_name": "client-bundle-leak",
+      "prompt": "React Router 7 framework mode on Vite. Our client bundle is way bigger than it should be for a mostly-static marketing site and it's dragging the Lighthouse score. I dumped the build output and the two suspicious source files into {FIXTURE}: the client chunk listing, a server-only contact route module, and a content section component. The contact route is server-only, it just sends an email through an SDK, so I have no idea why any of that SDK code is in the client build at all. Figure out what's happening with both of those big chunks and tell me how to fix them.",
+      "expected_output": "Explains the module-scope SDK client construction (e.g. `new SESv2Client(...)` at module scope) is a side effect opaque to tree-shaking, so the SDK is retained even though the action/loader exports are stripped; recommends a server-only module (*.server.ts) or a lazy import inside the action, noting the whole call pipeline must move, not just the client construction; separately identifies `import * as LucideIcons` as a namespace import shipping the entire icon set and recommends an explicit icon registry with named imports.",
+      "files": ["fixture copied per run"]
+    }
+  ]
+}
